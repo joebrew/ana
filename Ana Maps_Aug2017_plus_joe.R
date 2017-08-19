@@ -907,7 +907,18 @@ joe <- function(var = "p_p5_3",
                        n.simulations = n.simulations,
                        alpha.level = 0.05,
                        plot = FALSE)
-
+  p_hot <- poisson$most.likely.cluster$p.value
+  if(p_hot <= 0.05){
+    hot_dash <- "5, 5"
+  } else {
+    hot_dash <- NULL
+  }
+  p_cold <- cold_poisson$most.likely.cluster$p.value
+  if(p_cold <= 0.05){
+    cold_dash <- "5, 5"
+  } else {
+    cold_dash <- NULL
+  }
     # get clusters
     cluster <- poisson$most.likely.cluster$location.IDs.included
     cold_cluster <- cold_poisson$most.likely.cluster$location.IDs.included
@@ -918,15 +929,15 @@ joe <- function(var = "p_p5_3",
         # addPolygons(data = dfv, 
         #             fillOpacity = 0,
         #             opacity = 0) %>%
-        addPolylines(data = man3[man3@data$NAME_3 == 'Manhica - Sede',],
-                     color = 'black',
-                     weight = 1) %>%
+        # addPolylines(data = man3[man3@data$NAME_3 == 'Manhica - Sede',],
+        #              color = 'black',
+        #              weight = 1) %>%
         addCircleMarkers(data = df_spatial,
                          color = ifelse(df_spatial@data[,var] == 1, "red", "blue"),
                          weight = 1,
-                         radius = 2,
-                         opacity = 0.5,
-                         fill = FALSE)
+                         radius = 3,
+                         opacity = 0.6,
+                         fill = TRUE)
       
       
       if(hot){
@@ -945,7 +956,8 @@ joe <- function(var = "p_p5_3",
         if(circle_outline){
           l <- l %>%
             addPolylines(data = circ,
-                         col = 'red')
+                         col = 'red',
+                         dashArray = hot_dash)
         }
         
         if(cluster_outline){
@@ -974,7 +986,8 @@ joe <- function(var = "p_p5_3",
         if(circle_outline){
           l <- l %>%
             addPolylines(data = circ,
-                         col = 'blue')
+                         col = 'blue',
+                         dashArray = cold_dash)
         }
         if(cluster_outline){
           l <- l %>%
@@ -985,6 +998,11 @@ joe <- function(var = "p_p5_3",
           
         }
       }
+      # Add legend <-
+     l <-  l %>%
+        addLegend('topright',
+                  colors = c('blue', 'red'),
+                  labels = c('Cold spot', 'Hot spot'))
       return(l)
     } else {
       
@@ -993,7 +1011,7 @@ joe <- function(var = "p_p5_3",
       # Plot
       plot(dfv,axes=TRUE, border = adjustcolor("black", alpha.f = 0))
       
-      plot(man3, add = TRUE)
+      # plot(man3, add = TRUE)
       points(df_spatial, pch= ifelse(df_spatial@data[,var] == 1, "+", "0"),
              cex=0.5,
              col= adjustcolor("black", alpha.f = 0.5))
@@ -1012,7 +1030,8 @@ joe <- function(var = "p_p5_3",
         if(circle_outline){
           lines(circ,
                 col = adjustcolor('darkred', alpha.f = 0.6),
-                lwd = 2)
+                lwd = 2,
+                lty = ifelse(p_hot > 0.05, 2, 1))
         }
         if(cluster_outline){
           plot(dfv[cluster,],add=TRUE,
@@ -1032,7 +1051,8 @@ joe <- function(var = "p_p5_3",
                         mc$ctr[2] + mc$rad*sin(angles))
         if(circle_outline){
           lines(circ,
-                col = adjustcolor('darkblue', alpha.f = 0.6))
+                col = adjustcolor('darkblue', alpha.f = 0.6),
+                lty = ifelse(p_cold > 0.05, 2, 1))
         }
         if(cluster_outline){
           plot(dfv[cold_cluster,],add=TRUE,
@@ -1054,8 +1074,12 @@ joe <- function(var = "p_p5_3",
                           ' | ',
                           ifelse(cold,
                                  paste0("p-value for cold:",cold_poisson$most.likely.cluster$p.value) , "")))
+      legend('topright',
+             pch = 16,
+             col = c('blue', 'red'),
+             legend = c('Cold spot', 'Hot spot'),
+             bty = 'n')
     }
-    
 }
 
 # Now you have function named "joe", which have some options:
