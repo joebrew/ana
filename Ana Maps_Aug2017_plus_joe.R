@@ -908,13 +908,13 @@ joe <- function(var = "p_p5_3",
                        alpha.level = 0.05,
                        plot = FALSE)
   p_hot <- poisson$most.likely.cluster$p.value
-  if(p_hot <= 0.05){
+  if(p_hot > 0.05){
     hot_dash <- "5, 5"
   } else {
     hot_dash <- NULL
   }
   p_cold <- cold_poisson$most.likely.cluster$p.value
-  if(p_cold <= 0.05){
+  if(p_cold > 0.05){
     cold_dash <- "5, 5"
   } else {
     cold_dash <- NULL
