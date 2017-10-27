@@ -971,6 +971,29 @@ joe <- function(var = "p_p5",
   # Remove any NA obs
   dfs <- dfs[!is.na(dfs@data[,var]),]
   
+  # Get prevalence in and out of cluster
+  prev_in_vec <- dfs@data[dfs@data$cluster %in% cluster,var]
+  prev_out_vec <- dfs@data[!dfs@data$cluster %in% cluster,var]
+  
+  prev_in_message <- paste0('=========================================\n', 
+                            'IN CLUSTER: ', sum(prev_in_vec), ' ',
+                            'cases in the cluster; ',
+                            length(which(prev_in_vec == 0)),
+                            ' non-cases in the cluster. ',
+                            '\nPopulation = ', length(prev_in_vec), '. ',
+                            '\nPrevalence = ',
+                            round(sum(prev_in_vec) / length(prev_in_vec) * 100, digits = 2), '%.\n=========================================')
+  prev_out_message <- paste0('=========================================\n',
+                             'OUT OF CLUSTER: ', sum(prev_out_vec), ' ',
+                            'cases out of the cluster; ',
+                            length(which(prev_out_vec == 0)),
+                            ' non-cases out of the cluster. ',
+                            '\nPopulation = ', length(prev_out_vec), '. ',
+                            '\nPrevalence = ',
+                            round(sum(prev_out_vec) / length(prev_out_vec) * 100, digits = 2), '%.\n=========================================')
+  cat(prev_in_message)
+  cat(prev_out_message)
+  
   if(use_leaflet){
     l <- leaflet() %>%
       addProviderTiles(background) %>%
@@ -985,7 +1008,8 @@ joe <- function(var = "p_p5",
                        weight = 1,
                        radius = 3,
                        opacity = 0.6,
-                       fill = TRUE)
+                       fill = TRUE) %>%
+      addScaleBar(position = 'bottomleft')
     
     
     if(hot){
