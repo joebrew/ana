@@ -9,6 +9,7 @@ library(raster)
 library(rgeos)
 library(dplyr)
 library(ggplot2)
+library(geosphere)
 
 # open the data-base from imMIPPAD with coordenates
 imMIPPAD_map<- read_excel("DB_MIPPADall_Maps_5Oct2017.xlsx")
@@ -1025,6 +1026,7 @@ joe <- function(var = "p_p5",
       angles <- seq(0, 2*pi, length.out=200)
       circ   <- cbind(mc$ctr[1] + mc$rad*cos(angles),
                       mc$ctr[2] + mc$rad*sin(angles))
+      circ_hot <- circ
       if(circle_outline){
         l <- l %>%
           addPolylines(data = circ,
@@ -1055,6 +1057,7 @@ joe <- function(var = "p_p5",
       angles <- seq(0, 2*pi, length.out=200)
       circ   <- cbind(mc$ctr[1] + mc$rad*cos(angles),
                       mc$ctr[2] + mc$rad*sin(angles))
+      circ_cold <- circ
       if(circle_outline){
         l <- l %>%
           addPolylines(data = circ,
@@ -1075,7 +1078,6 @@ joe <- function(var = "p_p5",
       addLegend('topright',
                 colors = c('blue', 'red'),
                 labels = c('Cold spot', 'Hot spot'))
-    return(l)
   } else {
     
     
@@ -1099,6 +1101,7 @@ joe <- function(var = "p_p5",
       angles <- seq(0, 2*pi, length.out=200)
       circ   <- cbind(mc$ctr[1] + mc$rad*cos(angles),
                       mc$ctr[2] + mc$rad*sin(angles))
+      circ_hot <- circ
       if(circle_outline){
         lines(circ,
               col = adjustcolor('darkred', alpha.f = 0.6),
@@ -1121,6 +1124,7 @@ joe <- function(var = "p_p5",
       angles <- seq(0, 2*pi, length.out=200)
       circ   <- cbind(mc$ctr[1] + mc$rad*cos(angles),
                       mc$ctr[2] + mc$rad*sin(angles))
+      circ_cold <- circ
       if(circle_outline){
         lines(circ,
               col = adjustcolor('darkblue', alpha.f = 0.6),
@@ -1151,6 +1155,37 @@ joe <- function(var = "p_p5",
            col = c('blue', 'red'),
            legend = c('Cold spot', 'Hot spot'),
            bty = 'n')
+  }
+  # Get the circle size
+  if(exists('circ')){
+    circ_radius <- function(circ, hot = TRUE){
+      circ_sp <- circ
+      p = Polygon(circ_sp)
+      circ_sp = SpatialPolygons(list(Polygons(list(p), ID = "a")), proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
+      # convert to utm to get area
+      circ_utm <- spTransform(circ_sp,
+                              CRS(paste0("+proj=utm +zone=", 36, " +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs")))
+      the_area <- rgeos::gArea(circ_utm) / 100000
+      # Convert area to radius
+      the_radius <- sqrt(the_area / 3.14)
+      the_message <- paste0('----------\nRadius of the ',
+                            ifelse(hot, 'hot ', 'cold '),
+                            'circle is ', 
+                            round(digits = 3), 
+                            ' kilometers.',
+                            '\n----------\n')
+      cat(the_message)
+    }
+    if(exists('circ_hot')){
+      circ_radius(circ = circ_hot, hot = TRUE)
+    }
+    if(exists('circ_cold')){
+      circ_radius(circ = circ_cold, hot = FALSE)
+    }
+  }
+  if(use_leaflet){
+    return(l)
+    
   }
 }
 
