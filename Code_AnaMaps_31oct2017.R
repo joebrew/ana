@@ -260,11 +260,10 @@ coordinates(df_spatial) <- ~x+y
 plot(df_spatial)
 
 # Give df_spatial a projection
-proj4string(df_spatial) <- proj4string(the_map)
+proj4string(df_spatial) <- proj4string(moz0)
 
 # To confirm that our projections are good, lets plot the_map with df_spatial
-plot(the_map)
-points(df_spatial)
+plot(df_spatial)
 
 # KEEP ONLY THOSE POINTS IN MANHICA SEDE!!!
 mansed <- man3[man3@data$NAME_3 == "Manhica - Sede",]
@@ -274,7 +273,7 @@ df_spatial <- df_spatial[!is.na(x),]
 
 # Keep only the df equivalents
 df_original_before_removals <- df
-df <- df[df$permid %in% df_spatial@data$permid]
+df <- df[df$permid %in% df_spatial@data$permid,]
 
 # Use convex hull to create a border
 the_map <- gConvexHull(df_spatial)
@@ -620,7 +619,7 @@ ana_hotspot <- function(var = "p_p5",
                         plot_it = FALSE,
                         seed = 1){
   # set.seed(seed)  
-  if(var %in% c("mic_mujer", 'pcr_mujer')){set.seed(3)} else {set.seed(seed)}
+  if(var %in% c("mic_mujer", 'pcr_mujer')){set.seed(50)} else {set.seed(seed)}
   # Use the kulldorf method to get hotspots
   library(SpatialEpi)
   
@@ -941,7 +940,7 @@ joe <- function(var = "p_p5",
                 dfs = df_spatial,
                 seed = 1){ # change the background by looking here: https://leaflet-extras.github.io/leaflet-providers/preview/
   
-  if(var %in% c("mic_mujer", 'pcr_mujer')){set.seed(3)} else {set.seed(seed)}
+  if(var %in% c("mic_mujer", 'pcr_mujer')){set.seed(50)} else {set.seed(seed)}
   
   
   # Use the kulldorf method to get hotspots
@@ -1294,7 +1293,7 @@ joe('pcr_mujer', hot = TRUE, cold = FALSE, cluster_outline = TRUE, use_leaflet =
 in_or_out <- function(var = "p_p5",
                 hot = TRUE,
                 dfs = df_spatial,
-                seed = 41){
+                seed = 50){
   set.seed(seed)
   # if(var %in% "mic_mujer"){set.seed(50)} else {set.seed(seed)}
   # Use the kulldorf method to get hotspots
