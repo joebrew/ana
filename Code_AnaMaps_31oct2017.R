@@ -1496,3 +1496,16 @@ vars <- c('pcr_mujer',
 
 dev.off()
 
+# Generate a new variable for multi-factoral hotspot detection
+df_spatial$age <- ifelse(df_spatial$age3 == 1, '<20 years',
+                 ifelse(df_spatial$age3 == 2, '20-24 years ',
+                        ifelse(df_spatial$age3 == 3, '25+ years', NA)))
+  
+df_spatial$iptpjoe <- ifelse(df_spatial$iptp == 0, 'Placebo', 
+                     ifelse(df_spatial$iptp == 1, 'SP',
+                            ifelse(df_spatial$iptp == 2, 'MQ', NA)))
+df_spatial$age_iptp <- paste0(df_spatial$age, ' ', df_spatial$iptpjoe)
+
+
+
+joe('age_iptp', hot = TRUE, cold = FALSE, cluster_outline = TRUE, use_leaflet = TRUE, background = 'Esri.WorldImagery', circle_outline = TRUE)
