@@ -1,0 +1,11 @@
+---
+title: "R packages used"
+author: "Joe Brew"
+date: "December 1, 2017"
+output: pdf_document
+bibliography: library.bib
+---
+
+---
+nocite: '@*'
+...

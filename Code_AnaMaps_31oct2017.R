@@ -15,7 +15,8 @@ library(geosphere)
 #imMIPPAD_map<- read_excel("DB_MIPPADall_Maps_5Oct2017.xlsx")
 
 # open the data-base from imMIPPAD with coordenates
-imMIPPAD_map<- read_excel("/Users/anamariafonseca/Desktop/analise_final/06_Maps/allMIPPAD_2010-2012_pcr/DB_MIPPADall_Maps_PCR_18oct2017.xlsx")
+# imMIPPAD_map<- read_excel("/Users/anamariafonseca/Desktop/analise_final/06_Maps/allMIPPAD_2010-2012_Mic&pcr/DB_MIPPADall_Maps_PCR_18oct2017.xlsx")
+imMIPPAD_map <- read_excel('DB_MIPPADall_Maps_PCR_18oct2017.xlsx')
 # imMIPPAD_map <- read_excel('DB_MIPPADall_Maps_5Oct2017.xlsx')
 
 #convert UTM variables to numeric
@@ -469,7 +470,8 @@ variables <- c("pcr_mujer",
                "p_dbl6e",
                "p_dbl5e",
                "p_ama1",
-               "p_msp1")
+               "p_msp1",
+               "hiv")
 
 
 # plot the maps_ raster maps with bobles
@@ -500,7 +502,7 @@ df_spatial$cluster <- cutree(test, h = d)
 # df_spatial$cluster <- if_else(df_spatial$latitude>-25.42, 1, 2)
 
 
-# View our clustering results !!!!ELEPHANT!!!!
+# View our clustering results
 library(RColorBrewer)
 cols <- colorRampPalette(brewer.pal(9, "Spectral"))(length(unique(df_spatial$cluster)))
 cols <- sample(cols, length(cols))
@@ -613,6 +615,8 @@ get_positivity("p_dbl5e")
 get_positivity("p_dbl6e")
 get_positivity("p_msp1")
 get_positivity("p_ama1")
+get_positivity("hiv")
+get_positivity("emb2")
 
 # Define a function for identifying hotspots
 ana_hotspot <- function(var = "p_p5",
@@ -684,7 +688,7 @@ ana_hotspot <- function(var = "p_p5",
 # statistical_output <- ana_hotspot("p_dbl5e")
 # statistical_output <- ana_hotspot("p_msp1")
 
-# Run the function just to make a pretty map of hotspots####!!!!LION!!!!!
+# Run the function just to make a pretty map of hotspots
 ana_hotspot("pcr_mujer", plot_it = TRUE)
 ana_hotspot("mic_mujer", plot_it = TRUE)  
 ana_hotspot("p_p5", plot_it = TRUE)
@@ -696,6 +700,8 @@ ana_hotspot("p_dbl5e", plot_it = TRUE)
 ana_hotspot("p_dbl6e", plot_it = TRUE)
 ana_hotspot(var = "p_msp1", plot_it = TRUE)
 ana_hotspot(var = "p_ama1", plot_it = TRUE)
+ana_hotspot(var = "hiv", plot_it = TRUE)
+ana_hotspot(var = "emb2", plot_it = TRUE)
 
 ############################################################
 # COMPARE MANHIÇA VS MARAGRA POSITIVITY
@@ -727,6 +733,8 @@ ana_test("p_dbl5e")
 ana_test("p_dbl6e")
 ana_test("p_msp1")
 ana_test("p_ama1")
+ana_test("hiv")
+ana_test("emb2")
 
 # Get better visualizations
 
@@ -1049,7 +1057,7 @@ joe <- function(var = "p_p5",
       only_positives_in_cluster <- dfs[dfs$cluster %in% cluster & dfs@data[,var] == 1,]
       l <- l %>%
         addCircleMarkers(data = only_positives_in_cluster,
-                         color = 'red',
+                         color = 'purple',
                          weight = 2,
                          radius = 4,
                          opacity = 0.8,
@@ -1108,8 +1116,8 @@ joe <- function(var = "p_p5",
     # Add legend <-
     l <-  l %>%
       addLegend('topright',
-                colors = c('blue', 'red'),
-                labels = c('Cold spot', 'Hot spot'))
+                colors = c('blue', 'red', 'purple'),
+                labels = c('Cold spot', 'Hot spot', 'Cases in hot spot'))
   } else {
     
     
@@ -1127,7 +1135,7 @@ joe <- function(var = "p_p5",
       only_positives_in_cluster <- dfs[dfs$cluster %in% cluster & dfs@data[,var] == 1,]
       points(only_positives_in_cluster,
              pch = 16,
-             col = adjustcolor('darkred', alpha.f = 0.6),
+             col = adjustcolor('purple', alpha.f = 0.6),
              cex = 0.5)
       mc     <- getMinCircle(coordinates(only_positives_in_cluster))
       angles <- seq(0, 2*pi, length.out=200)
@@ -1184,8 +1192,8 @@ joe <- function(var = "p_p5",
                                paste0("p-value for cold:",cold_poisson$most.likely.cluster$p.value) , "")))
     legend('topright',
            pch = 16,
-           col = c('blue', 'red'),
-           legend = c('Cold spot', 'Hot spot'),
+           col = c('blue', 'red', 'purple'),
+           legend = c('Cold spot', 'Hot spot', 'Cases in hot spot'),
            bty = 'n')
   }
   # Get the circle size
@@ -1195,7 +1203,7 @@ joe <- function(var = "p_p5",
       p = Polygon(circ_sp)
       circ_sp = SpatialPolygons(list(Polygons(list(p), ID = "a")), 
                                 proj4string = CRS(proj4string(moz0)))
-                                # proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
+      # proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
       # convert to utm to get area
       circ_utm <- spTransform(circ_sp,
                               CRS(paste0("+proj=utm +zone=", 36, " +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs")))
@@ -1260,6 +1268,10 @@ joe('p_msp1', hot = FALSE, cold = FALSE, cluster_outline = FALSE, circle_outline
 
 joe('p_ama1', hot = FALSE, cold = FALSE, cluster_outline = FALSE, circle_outline = FALSE, use_leaflet = TRUE)
 
+joe('hiv', hot = TRUE, cold = FALSE, cluster_outline = FALSE, circle_outline = TRUE, use_leaflet = TRUE)
+
+joe('emb2', hot = TRUE, cold = FALSE, cluster_outline = FALSE, circle_outline = TRUE, use_leaflet = TRUE)
+
 ###################################
 
 joe('p_p1', hot = TRUE, cold = FALSE, cluster_outline = FALSE, circle_outline = TRUE, use_leaflet = TRUE)
@@ -1287,18 +1299,18 @@ joe('pcr_mujer', hot = TRUE, cold = TRUE, cluster_outline = TRUE, use_leaflet = 
 
 joe('pcr_mujer', hot = TRUE, cold = FALSE, cluster_outline = TRUE, use_leaflet = TRUE, background = 'Esri.WorldImagery', circle_outline = TRUE)
 
-#################################!!!!ZEBRA!!!!!!!######################################
+
 # Define a functiion for identifying which points are
 # in hotspots
 in_or_out <- function(var = "p_p5",
-                hot = TRUE,
-                dfs = df_spatial,
-                seed = 50){
+                      hot = TRUE,
+                      dfs = df_spatial,
+                      seed = 50){
   set.seed(seed)
   # if(var %in% "mic_mujer"){set.seed(50)} else {set.seed(seed)}
   # Use the kulldorf method to get hotspots
   library(SpatialEpi)
-
+  
   
   # Create centroids
   centroids <- as.matrix(coordinates(dfv))
@@ -1329,8 +1341,8 @@ in_or_out <- function(var = "p_p5",
                        alpha.level = 0.05,
                        plot = FALSE)
   p_hot <- poisson$most.likely.cluster$p.value
-
-
+  
+  
   # get clusters
   cluster <- poisson$most.likely.cluster$location.IDs.included
   in_cluster <- dfs@data$cluster %in% cluster
@@ -1344,20 +1356,20 @@ in_or_out <- function(var = "p_p5",
   angles <- seq(0, 2*pi, length.out=200)
   circ   <- cbind(mc$ctr[1] + mc$rad*cos(angles),
                   mc$ctr[2] + mc$rad*sin(angles))
-      circ_sp <- circ
-      p = Polygon(circ_sp)
-      circ_sp = SpatialPolygons(list(Polygons(list(p), ID = "a")), 
-                                # proj4string = proj4string(only_positives_in_cluster))
-                                proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
-      dfs2 <- spTransform(dfs, 
-                                               proj4string(circ_sp))
-      in_circle <- over(dfs2, polygons(circ_sp))
-      in_circle <- !is.na(in_circle)
+  circ_sp <- circ
+  p = Polygon(circ_sp)
+  circ_sp = SpatialPolygons(list(Polygons(list(p), ID = "a")), 
+                            # proj4string = proj4string(only_positives_in_cluster))
+                            proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
+  dfs2 <- spTransform(dfs, 
+                      proj4string(circ_sp))
+  in_circle <- over(dfs2, polygons(circ_sp))
+  in_circle <- !is.na(in_circle)
   # Make a dataframe to return
-      out <- data.frame(a = in_cluster,
-                        b = in_circle)
-      names(out)<- paste0(var, c("_cluster", "_circle"))
-      return(out)
+  out <- data.frame(a = in_cluster,
+                    b = in_circle)
+  names(out)<- paste0(var, c("_cluster", "_circle"))
+  return(out)
 }
 
 # The below loop creates columns for whether something is in or out
@@ -1369,9 +1381,11 @@ vars <- c('pcr_mujer',
           'p_pcsp',
           'p_dbl3x',
           'p_dbl5e',
+          'hiv',
+          'emb2',
           'p_dbl6e')#,
-          # 'p_msp1',
-          #"p_ama1")
+# 'p_msp1',
+#"p_ama1")
 # coordinates(df_spatial) <- ~longitude+latitude
 # proj4string(df_spatial) <- proj4string(dfs)
 df <- df[df$motid %in% df_spatial$motid,]
@@ -1421,14 +1435,14 @@ calculate_prevalence <- function(var, plot = TRUE){
   out$positives[out$location == "out" & out$type == "cluster"] <- sum(prevalence_variable[!cluster_variable], na.rm = TRUE)
   out$negatives[out$location == "out" & out$type == "cluster"] <- length(which(prevalence_variable[!cluster_variable] == 0))
   out$population[out$location == "out" & out$type == "cluster"] <- length(prevalence_variable[!cluster_variable])
-
+  
   # Calculate prevalence  
   out$prev<-out$positives/out$population*100
   out <- out %>% arrange(type)
   if(plot){
     g <- ggplot(data = out,
-           aes(x = location,
-               y = prev)) +
+                aes(x = location,
+                    y = prev)) +
       geom_bar(stat = "identity") +
       facet_wrap(~type) +
       geom_label(aes(label = paste0(round(prev, digits = 2), "%"))) +
@@ -1448,6 +1462,8 @@ calculate_prevalence("p_pcsp")
 calculate_prevalence("p_dbl3x")
 calculate_prevalence("p_dbl5e")
 calculate_prevalence("p_dbl6e")
+calculate_prevalence("hiv")
+calculate_prevalence("emb2")
 #calculate_prevalence("p_msp1")
 #calculate_prevalence("p_ama1")
 
@@ -1464,6 +1480,8 @@ vars <- c('pcr_mujer',
           'p_p8',
           'comp5_8',
           'p_dbl5e',
+          'hiv',
+          'emb2',
           'p_msp1')
 #pdf('some_examples.pdf', height = 11, width = 8.5)
 #for (i in 1:length(vars)){
@@ -1477,5 +1495,4 @@ vars <- c('pcr_mujer',
 #joe(this_var, hot = TRUE, cold = TRUE, cluster_outline = TRUE)
 
 dev.off()
-
 
